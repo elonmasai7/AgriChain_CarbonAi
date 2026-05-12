@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Boolean, Float, Text
+from sqlalchemy import Column, String, DateTime, Boolean, Float, Text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -12,7 +12,7 @@ class Farm(Base):
     __tablename__ = "farms"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    farmer_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    farmer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     name = Column(String(255), nullable=False)
     description = Column(Text)
     country = Column(String(100), nullable=False)
@@ -42,7 +42,7 @@ class FarmImage(Base):
     __tablename__ = "farm_images"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    farm_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    farm_id = Column(UUID(as_uuid=True), ForeignKey("farms.id"), nullable=False, index=True)
     image_url = Column(String(500), nullable=False)
     image_type = Column(String(50))
     uploaded_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

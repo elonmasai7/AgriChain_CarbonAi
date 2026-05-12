@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Float, Text, Boolean
+from sqlalchemy import Column, String, DateTime, Float, Text, Boolean, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -12,9 +12,9 @@ class MarketplaceListing(Base):
     __tablename__ = "marketplace_listings"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    farm_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    farm_id = Column(UUID(as_uuid=True), ForeignKey("farms.id"), nullable=False, index=True)
     carbon_asset_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    seller_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    seller_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     price_per_tonne = Column(Float, nullable=False)
     total_tonnes = Column(Float, nullable=False)
     available_tonnes = Column(Float, nullable=False)
@@ -34,7 +34,7 @@ class CarbonPurchase(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     listing_id = Column(UUID(as_uuid=True), nullable=False)
-    buyer_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    buyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     tonnes_purchased = Column(Float, nullable=False)
     total_price = Column(Float, nullable=False)
     currency = Column(String(10))

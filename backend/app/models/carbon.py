@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import Column, String, DateTime, Float, Text, Integer
+from sqlalchemy import Column, String, DateTime, Float, Text, Integer, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 
@@ -12,8 +12,8 @@ class CarbonScore(Base):
     __tablename__ = "carbon_scores"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    farm_id = Column(UUID(as_uuid=True), nullable=False, index=True)
-    farmer_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+    farm_id = Column(UUID(as_uuid=True), ForeignKey("farms.id"), nullable=False, index=True)
+    farmer_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     carbon_offset_tonnes = Column(Float, nullable=False)
     sustainability_score = Column(Float)
     environmental_health_score = Column(Float)
