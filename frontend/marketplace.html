@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carbon Marketplace — AgriChain Carbon AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/farmer-dashboard.html">
+          <div class="logo-icon">AC</div>
+          <div>
+            <div class="brand-text">AgriChain</div>
+            <div class="brand-sub">Carbon AI Platform</div>
+          </div>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Marketplace</div>
+          <a href="/marketplace.html" class="nav-item active">
+            <span class="nav-icon">&#9632;</span> Browse Credits
+          </a>
+          <a href="/marketplace.html?tab=purchases" class="nav-item">
+            <span class="nav-icon">&#9632;</span> My Purchases
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Dashboard</div>
+          <a href="/farmer-dashboard.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Farmer Dashboard
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Account</div>
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon">&#9632;</span> Sign Out
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px">
+          <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;">O</div>
+          <div>
+            <div class="user-name" style="font-size:14px;font-weight:600;color:var(--color-text);">Buyer</div>
+            <div class="user-role" style="font-size:12px;color:var(--color-text-muted);">Organization</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-toggle">&#9776;</button>
+          <div class="header-search">
+            <span style="color:var(--color-text-muted)">&#128269;</span>
+            <input type="text" placeholder="Search carbon credits..." id="marketplace-search">
+          </div>
+        </div>
+        <div class="header-right">
+          <span style="font-size:13px;color:var(--color-text-muted)" id="network-badge">Polygon Mainnet</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Carbon Credit Marketplace</h1>
+          <p class="page-subtitle">Browse verified carbon assets from African sustainable farms</p>
+        </div>
+
+        <div class="marketplace-filters" id="marketplace-filters">
+          <div class="form-group">
+            <label class="form-label">Min Tonnes</label>
+            <input class="form-input" type="number" id="filter-tonnes" placeholder="Min">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Max Price ($/tonne)</label>
+            <input class="form-input" type="number" id="filter-price" placeholder="Max">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Min ESG Score</label>
+            <input class="form-input" type="number" id="filter-esg" min="0" max="100" placeholder="70">
+          </div>
+          <div class="form-group">
+            <label class="form-label">&nbsp;</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:var(--color-text-secondary);cursor:pointer">
+              <input type="checkbox" id="filter-verified"> Verified only
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-primary" id="filter-apply">Apply Filters</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="browse">Available Credits</button>
+          <button class="tab" data-tab="purchases">My Purchases</button>
+        </div>
+
+        <div id="tab-browse">
+          <div id="listings-loading" class="loading"><div class="spinner"></div></div>
+          <div id="listings-empty" class="empty-state" style="display:none">
+            <div class="empty-state-icon">&#9632;</div>
+            <div class="empty-state-title">No Credits Available</div>
+            <p style="color:var(--color-text-muted)">Check back later for new carbon credit listings.</p>
+          </div>
+          <div id="listings-grid" class="listing-grid" style="display:none"></div>
+        </div>
+
+        <div id="tab-purchases" style="display:none">
+          <div id="purchases-content">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Purchase Modal -->
+  <div class="modal-overlay" id="purchase-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Purchase Carbon Credits</h2>
+        <button class="modal-close" onclick="document.getElementById('purchase-modal').classList.remove('open')">&times;</button>
+      </div>
+      <div class="modal-body" id="purchase-modal-body">
+        <div id="purchase-details"></div>
+        <div class="form-group">
+          <label class="form-label">Tonnes to Purchase</label>
+          <input class="form-input" type="number" id="purchase-tonnes" min="1" step="1" value="1">
+        </div>
+        <div id="purchase-total" style="font-size:18px;font-weight:700;margin-top:12px">Total: $0.00</div>
+        <div id="purchase-error" class="form-error"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="document.getElementById('purchase-modal').classList.remove('open')">Cancel</button>
+        <button class="btn btn-primary" id="confirm-purchase">Confirm Purchase</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    let currentListing = null;
+    let currentListings = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!auth.requireAuth()) return;
+
+      const tabs = document.querySelectorAll('.tabs .tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('tab-browse').style.display = tab.dataset.tab === 'browse' ? 'block' : 'none';
+          document.getElementById('tab-purchases').style.display = tab.dataset.tab === 'purchases' ? 'block' : 'none';
+          if (tab.dataset.tab === 'purchases') loadPurchases();
+        });
+      });
+
+      loadListings();
+
+      document.getElementById('filter-apply').addEventListener('click', loadListings);
+
+      const searchInput = document.getElementById('marketplace-search');
+      if (searchInput) {
+        searchInput.addEventListener('input', debounce(loadListings, 500));
+      }
+
+      document.getElementById('purchase-tonnes').addEventListener('input', updatePurchaseTotal);
+
+      document.getElementById('confirm-purchase').addEventListener('click', async () => {
+        const tonnes = parseFloat(document.getElementById('purchase-tonnes').value);
+        if (!tonnes || tonnes <= 0) {
+          document.getElementById('purchase-error').textContent = 'Enter a valid amount';
+          return;
+        }
+        if (tonnes > currentListing.available_tonnes) {
+          document.getElementById('purchase-error').textContent = `Only ${currentListing.available_tonnes} tonnes available`;
+          return;
+        }
+        document.getElementById('purchase-error').textContent = '';
+        try {
+          const result = await api.post('/marketplace/purchase', {
+            listing_id: currentListing.id,
+            tonnes: tonnes,
+          });
+          document.getElementById('purchase-modal').classList.remove('open');
+          alert(`Purchase successful!\nTX: ${result.transaction_hash}`);
+          loadListings();
+        } catch (err) {
+          document.getElementById('purchase-error').textContent = err.message;
+        }
+      });
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'purchases') {
+        document.querySelector('[data-tab="purchases"]').click();
+      }
+    });
+
+    function debounce(fn, ms) {
+      let timer;
+      return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => fn(...args), ms);
+      };
+    }
+
+    async function loadListings() {
+      const loading = document.getElementById('listings-loading');
+      const empty = document.getElementById('listings-empty');
+      const grid = document.getElementById('listings-grid');
+
+      loading.style.display = 'flex';
+      empty.style.display = 'none';
+      grid.style.display = 'none';
+
+      try {
+        const params = new URLSearchParams();
+        const tonnes = document.getElementById('filter-tonnes').value;
+        const price = document.getElementById('filter-price').value;
+        const esg = document.getElementById('filter-esg').value;
+        const verified = document.getElementById('filter-verified').checked;
+
+        if (tonnes) params.set('min_tonnes', tonnes);
+        if (price) params.set('max_price', price);
+        if (esg) params.set('min_esg_score', esg);
+        if (verified) params.set('verified_only', 'true');
+
+        const data = await api.get(`/marketplace/listings?${params.toString()}`);
+        let listings = data.listings || data || [];
+
+        const searchQuery = document.getElementById('marketplace-search')?.value?.toLowerCase();
+        if (searchQuery) {
+          listings = listings.filter(l =>
+            (l.farm_name || '').toLowerCase().includes(searchQuery) ||
+            l.description?.toLowerCase().includes(searchQuery)
+          );
+        }
+
+        currentListings = listings;
+        loading.style.display = 'none';
+
+        if (listings.length === 0) {
+          empty.style.display = 'block';
+          grid.style.display = 'none';
+          return;
+        }
+
+        empty.style.display = 'none';
+        grid.style.display = 'grid';
+        grid.innerHTML = '';
+
+        listings.forEach(l => {
+          const card = document.createElement('div');
+          card.className = 'listing-card';
+          card.innerHTML = `
+            <div class="listing-card-body">
+              <div class="listing-card-header">
+                <div>
+                  <div class="listing-farm-name">${l.farm_name || 'Verified Farm'}</div>
+                  <span style="font-size:12px;color:var(--color-text-muted)">Listing #${l.id.substring(0, 8)}</span>
+                </div>
+                <span class="badge ${l.verification_badge ? 'badge-green' : 'badge-amber'}">
+                  ${l.verification_badge ? 'Verified' : 'Standard'}
+                </span>
+              </div>
+              <div class="listing-meta">
+                <span class="badge badge-blue">${l.available_tonnes} tCO&#8322;e</span>
+                <span class="badge badge-green">ESG ${l.esg_score?.toFixed(0) || 'N/A'}</span>
+              </div>
+              <div class="listing-detail">
+                <span class="listing-detail-label">Price per tonne</span>
+                <span class="listing-detail-value">$${l.price_per_tonne.toFixed(2)}</span>
+              </div>
+              <div class="listing-detail">
+                <span class="listing-detail-label">Available</span>
+                <span class="listing-detail-value">${l.available_tonnes} of ${l.total_tonnes} t</span>
+              </div>
+              <div class="listing-detail">
+                <span class="listing-detail-label">Listed</span>
+                <span class="listing-detail-value">${new Date(l.created_at).toLocaleDateString()}</span>
+              </div>
+            </div>
+            <div class="listing-card-actions">
+              <button class="btn btn-primary" style="flex:1" onclick="openPurchase('${l.id}')">Purchase Credits</button>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        loading.style.display = 'none';
+        grid.style.display = 'block';
+        grid.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    }
+
+    async function openPurchase(listingId) {
+      try {
+        currentListing = currentListings.find(l => l.id === listingId);
+        if (!currentListing) {
+          currentListing = await api.get(`/marketplace/listings/${listingId}`);
+        }
+        document.getElementById('purchase-details').innerHTML = `
+          <div style="margin-bottom:16px">
+            <strong>${currentListing.farm_name || 'Verified Farm'}</strong><br>
+            <span style="color:var(--color-text-muted)">$${currentListing.price_per_tonne.toFixed(2)} per tonne</span>
+            <span style="color:var(--color-text-muted)"> &middot; ${currentListing.available_tonnes} tonnes available</span>
+          </div>
+        `;
+        document.getElementById('purchase-tonnes').value = 1;
+        document.getElementById('purchase-tonnes').max = currentListing.available_tonnes;
+        document.getElementById('purchase-error').textContent = '';
+        updatePurchaseTotal();
+        document.getElementById('purchase-modal').classList.add('open');
+      } catch (err) {
+        alert('Failed to load listing: ' + err.message);
+      }
+    }
+
+    function updatePurchaseTotal() {
+      const tonnes = parseFloat(document.getElementById('purchase-tonnes').value) || 0;
+      const price = currentListing?.price_per_tonne || 0;
+      document.getElementById('purchase-total').textContent = `Total: $${(tonnes * price).toFixed(2)}`;
+    }
+
+    async function loadPurchases() {
+      const container = document.getElementById('purchases-content');
+      try {
+        const purchases = await api.get('/marketplace/purchases');
+        if (!purchases || purchases.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-title">No Purchases Yet</div><p style="color:var(--color-text-muted)">Browse the marketplace to purchase carbon credits.</p></div>';
+          return;
+        }
+        let html = '<table class="data-table"><thead><tr><th>Date</th><th>Tonnes</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        purchases.forEach(p => {
+          html += `<tr>
+            <td>${new Date(p.created_at).toLocaleDateString()}</td>
+            <td><strong>${p.tonnes_purchased} t</strong></td>
+            <td>$${p.total_price.toFixed(2)}</td>
+            <td><span class="badge ${p.status === 'completed' ? 'badge-green' : 'badge-amber'}">${p.status}</span></td>
+            <td>
+              ${!p.is_retired ? `<button class="btn btn-outline btn-sm" onclick="retireAsset('${p.id}')">Retire</button>` : '<span class="badge badge-gray">Retired</span>'}
+            </td>
+          </tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    }
+
+    async function retireAsset(purchaseId) {
+      if (!confirm('Retire these carbon credits? This action cannot be undone.')) return;
+      try {
+        await api.post(`/marketplace/retire/${purchaseId}`);
+        alert('Carbon credits retired successfully!');
+        loadPurchases();
+      } catch (err) {
+        alert('Failed: ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

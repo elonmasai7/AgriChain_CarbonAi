@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Dashboard — AgriChain Carbon AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/farmer-dashboard.html">
+          <div class="logo-icon">AC</div>
+          <div>
+            <div class="brand-text">AgriChain</div>
+            <div class="brand-sub">Carbon AI Platform</div>
+          </div>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Main</div>
+          <a href="/farmer-dashboard.html" class="nav-item active">
+            <span class="nav-icon">&#9632;</span> Dashboard
+          </a>
+          <a href="/farmer-dashboard.html?tab=farms" class="nav-item">
+            <span class="nav-icon">&#9632;</span> My Farms
+          </a>
+          <a href="/carbon.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Carbon Credits
+          </a>
+          <a href="/advisor.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> AI Advisor
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Market</div>
+          <a href="/marketplace.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Marketplace
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Account</div>
+          <a href="#" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Profile
+          </a>
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon">&#9632;</span> Sign Out
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px">
+          <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;">J</div>
+          <div>
+            <div class="user-name" style="font-size:14px;font-weight:600;color:var(--color-text);">Farmer</div>
+            <div class="user-role" style="font-size:12px;color:var(--color-text-muted);">Farmer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-toggle">&#9776;</button>
+          <div class="header-search">
+            <span style="color:var(--color-text-muted)">&#128269;</span>
+            <input type="text" placeholder="Search farms, transactions..." id="global-search">
+          </div>
+        </div>
+        <div class="header-right">
+          <span style="font-size:13px;color:var(--color-text-muted)" id="network-badge">Polygon Mainnet</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Farmer Dashboard</h1>
+          <p class="page-subtitle">Manage your farms, track carbon credits, and monitor sustainability</p>
+        </div>
+
+        <div class="stats-grid" id="dashboard-stats">
+          <div class="stat-card">
+            <div class="stat-icon green">&#9733;</div>
+            <div>
+              <div class="stat-value" id="stat-farms">0</div>
+              <div class="stat-label">Registered Farms</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">&#9733;</div>
+            <div>
+              <div class="stat-value" id="stat-carbon">0</div>
+              <div class="stat-label">CO&#8322; Tonnes Sequestered</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">&#9733;</div>
+            <div>
+              <div class="stat-value" id="stat-sustainability">0</div>
+              <div class="stat-label">Sustainability Score</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">&#9733;</div>
+            <div>
+              <div class="stat-value" id="stat-earnings">0</div>
+              <div class="stat-label">Carbon Credits Earned</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabs" id="dashboard-tabs">
+          <button class="tab active" data-tab="farms">My Farms</button>
+          <button class="tab" data-tab="register-farm">Register Farm</button>
+          <button class="tab" data-tab="carbon">Carbon Scores</button>
+          <button class="tab" data-tab="satellite">Satellite Analysis</button>
+        </div>
+
+        <div id="tab-farms" class="tab-content">
+          <div id="farms-loading" class="loading"><div class="spinner"></div></div>
+          <div id="farms-empty" class="empty-state" style="display:none">
+            <div class="empty-state-icon">&#127793;</div>
+            <div class="empty-state-title">No Farms Registered</div>
+            <p style="color:var(--color-text-muted);margin-bottom:16px">Register your first farm to start earning carbon credits.</p>
+            <button class="btn btn-primary" onclick="document.querySelector('[data-tab=register-farm]').click()">Register Farm</button>
+          </div>
+          <div id="farms-list" style="display:none">
+            <div class="grid-2" id="farms-grid"></div>
+          </div>
+        </div>
+
+        <div id="tab-register-farm" class="tab-content" style="display:none">
+          <div class="card" style="max-width:680px">
+            <div class="card-header"><h2 class="card-title">Register New Farm</h2></div>
+            <form id="farm-form">
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Farm Name</label>
+                  <input class="form-input" id="farm-name" required placeholder="My Sustainable Farm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Country</label>
+                  <select class="form-select" id="farm-country">
+                    <option value="Kenya">Kenya</option>
+                    <option value="Uganda">Uganda</option>
+                    <option value="Tanzania">Tanzania</option>
+                    <option value="Rwanda">Rwanda</option>
+                    <option value="Ethiopia">Ethiopia</option>
+                    <option value="Nigeria">Nigeria</option>
+                    <option value="Ghana">Ghana</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-textarea" id="farm-description" placeholder="Describe your farm..."></textarea>
+              </div>
+              <div class="grid-3">
+                <div class="form-group">
+                  <label class="form-label">Area (hectares)</label>
+                  <input class="form-input" type="number" id="farm-area" step="0.1" min="0.1" required placeholder="5.0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Latitude</label>
+                  <input class="form-input" type="number" id="farm-lat" step="0.0001" placeholder="-1.2921">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Longitude</label>
+                  <input class="form-input" type="number" id="farm-lon" step="0.0001" placeholder="36.8219">
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Crop Types</label>
+                  <input class="form-input" id="farm-crops" placeholder="e.g., maize, beans, coffee">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Soil Type</label>
+                  <select class="form-select" id="farm-soil">
+                    <option value="">Select soil type</option>
+                    <option value="loam">Loam</option>
+                    <option value="clay">Clay</option>
+                    <option value="sandy">Sandy</option>
+                    <option value="silt">Silt</option>
+                    <option value="peat">Peat/Organic</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="form-group">
+                  <label class="form-label">Irrigation Type</label>
+                  <select class="form-select" id="farm-irrigation">
+                    <option value="rainfed">Rainfed</option>
+                    <option value="drip">Drip Irrigation</option>
+                    <option value="sprinkler">Sprinkler</option>
+                    <option value="flood">Flood Irrigation</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Fertilizer Usage</label>
+                  <select class="form-select" id="farm-fertilizer">
+                    <option value="organic">Organic</option>
+                    <option value="chemical">Chemical</option>
+                    <option value="compost">Compost</option>
+                    <option value="none">None</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sustainability Practices</label>
+                <textarea class="form-textarea" id="farm-practices" placeholder="e.g., agroforestry, cover cropping, no-till farming, crop rotation..."></textarea>
+              </div>
+              <div style="display:flex;gap:12px">
+                <button type="submit" class="btn btn-primary btn-lg">Register Farm</button>
+                <div id="farm-form-error" class="form-error" style="display:flex;align-items:center"></div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div id="tab-carbon" class="tab-content" style="display:none">
+          <div id="carbon-content">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <div id="tab-satellite" class="tab-content" style="display:none">
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Vegetation Health (NDVI)</h2>
+              </div>
+              <div style="height:240px;display:flex;align-items:center;justify-content:center;background:var(--color-surface-alt);border-radius:var(--radius-sm);color:var(--color-text-muted)">
+                <canvas id="ndvi-chart" width="400" height="240" style="width:100%;height:100%"></canvas>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header">
+                <h2 class="card-title">Land Health Overview</h2>
+              </div>
+              <div id="satellite-metrics" style="display:flex;flex-direction:column;gap:16px">
+                <div class="loading"><div class="spinner"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!auth.requireAuth()) return;
+      farmerDashboard.init();
+    });
+  </script>
+</body>
+</html>

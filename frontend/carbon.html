@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carbon Credits — AgriChain Carbon AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/farmer-dashboard.html">
+          <div class="logo-icon">AC</div>
+          <div>
+            <div class="brand-text">AgriChain</div>
+            <div class="brand-sub">Carbon AI Platform</div>
+          </div>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Carbon</div>
+          <a href="/carbon.html" class="nav-item active">
+            <span class="nav-icon">&#9632;</span> Carbon Dashboard
+          </a>
+          <a href="/farmer-dashboard.html?tab=satellite" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Satellite Analysis
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Farming</div>
+          <a href="/farmer-dashboard.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> My Farms
+          </a>
+          <a href="/advisor.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> AI Advisor
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Account</div>
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon">&#9632;</span> Sign Out
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px">
+          <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;">F</div>
+          <div>
+            <div class="user-name" style="font-size:14px;font-weight:600;color:var(--color-text);">Farmer</div>
+            <div class="user-role" style="font-size:12px;color:var(--color-text-muted);">Farmer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-toggle">&#9776;</button>
+        </div>
+        <div class="header-right">
+          <span style="font-size:13px;color:var(--color-text-muted)">Polygon Mainnet</span>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">Carbon Dashboard</h1>
+          <p class="page-subtitle">Monitor your carbon sequestration, mint certificates, and track earnings</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon green">&#9632;</div>
+            <div>
+              <div class="stat-value" id="total-carbon">0</div>
+              <div class="stat-label">Total CO&#8322; Sequestered (tonnes)</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">&#9632;</div>
+            <div>
+              <div class="stat-value" id="total-certificates">0</div>
+              <div class="stat-label">NFT Certificates Minted</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon amber">&#9632;</div>
+            <div>
+              <div class="stat-value" id="avg-sustainability">0</div>
+              <div class="stat-label">Avg Sustainability Score</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple">&#9632;</div>
+            <div>
+              <div class="stat-value" id="carbon-value">$0</div>
+              <div class="stat-label">Estimated Value ($15/tCO&#8322;e)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-header">
+            <h2 class="card-title">Carbon Score History</h2>
+          </div>
+          <div id="carbon-scores-list">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Blockchain Certificates</h2>
+            <button class="btn btn-primary btn-sm" id="mint-all-btn">Mint All Pending</button>
+          </div>
+          <div id="certificates-list">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!auth.requireAuth()) return;
+
+      try {
+        const scores = await api.get('/carbon/my-scores');
+        const scoresList = document.getElementById('carbon-scores-list');
+        const certificatesList = document.getElementById('certificates-list');
+
+        if (!scores || scores.length === 0) {
+          scoresList.innerHTML = '<div class="empty-state"><div class="empty-state-title">No Carbon Scores</div><p style="color:var(--color-text-muted)">Register a farm and estimate your carbon first.</p></div>';
+          certificatesList.innerHTML = '<div class="empty-state"><div class="empty-state-title">No Certificates</div></div>';
+          document.getElementById('total-carbon').textContent = '0';
+          return;
+        }
+
+        const totalCarbon = scores.reduce((s, c) => s + (c.carbon_offset_tonnes || 0), 0);
+        const avgSustain = scores.reduce((s, c) => s + (c.sustainability_score || 0), 0) / scores.length;
+        const mintedCount = scores.filter(s => s.status === 'approved').length;
+
+        document.getElementById('total-carbon').textContent = totalCarbon.toFixed(1);
+        document.getElementById('total-certificates').textContent = mintedCount;
+        document.getElementById('avg-sustainability').textContent = avgSustain.toFixed(0);
+        document.getElementById('carbon-value').textContent = `$${(totalCarbon * 15).toFixed(0)}`;
+
+        let tableHtml = '<table class="data-table"><thead><tr><th>Date</th><th>Farm</th><th>CO&#8322; (t)</th><th>Sustainability</th><th>Health</th><th>Confidence</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+        scores.forEach(s => {
+          tableHtml += `<tr>
+            <td>${new Date(s.created_at).toLocaleDateString()}</td>
+            <td style="font-family:monospace;font-size:12px">${s.farm_id.substring(0, 8)}...</td>
+            <td><strong>${s.carbon_offset_tonnes.toFixed(2)}</strong></td>
+            <td>${s.sustainability_score?.toFixed(0) || '—'}</td>
+            <td>${s.environmental_health_score?.toFixed(0) || '—'}</td>
+            <td>${s.ai_confidence_level ? (s.ai_confidence_level * 100).toFixed(0) + '%' : '—'}</td>
+            <td><span class="badge ${s.status === 'approved' ? 'badge-green' : s.status === 'pending' ? 'badge-amber' : 'badge-red'}">${s.status}</span></td>
+            <td>
+              ${s.status !== 'approved' ? `<button class="btn btn-outline btn-sm" onclick="mintCredit('${s.id}')">Mint NFT</button>` : '<span class="badge badge-green">Minted</span>'}
+            </td>
+          </tr>`;
+        });
+        tableHtml += '</tbody></table>';
+        scoresList.innerHTML = tableHtml;
+
+        certificatesList.innerHTML = '<div style="padding:16px;text-align:center;color:var(--color-text-muted)">Select a carbon score to mint as a blockchain certificate</div>';
+
+        document.getElementById('mint-all-btn').addEventListener('click', async () => {
+          const pending = scores.filter(s => s.status !== 'approved');
+          for (const s of pending) {
+            try {
+              await mintCredit(s.id);
+            } catch (e) {
+              console.error(`Failed to mint ${s.id}:`, e);
+            }
+          }
+        });
+      } catch (err) {
+        document.getElementById('carbon-scores-list').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    });
+
+    async function mintCredit(scoreId) {
+      const btn = event?.target;
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Minting...';
+      }
+      try {
+        const result = await api.post(`/blockchain/mint/${scoreId}`);
+        alert(`Carbon credit minted successfully!\nTransaction: ${result.transaction_hash}`);
+        location.reload();
+      } catch (err) {
+        alert('Minting failed: ' + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Mint NFT';
+        }
+      }
+    }
+  </script>
+</body>
+</html>

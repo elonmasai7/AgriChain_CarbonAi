@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgriChain Carbon AI — Climate Finance Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-logo">
+          <div class="logo-icon">AC</div>
+          <h1>AgriChain</h1>
+          <p>Carbon AI — Climate Finance Platform</p>
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Sign In</button>
+          <button class="auth-tab" data-tab="register">Create Account</button>
+        </div>
+
+        <div id="login-form">
+          <div class="form-group">
+            <label class="form-label">Email or Username</label>
+            <input class="form-input" type="text" id="login-username" placeholder="you@example.com" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" id="login-password" placeholder="Enter your password" autocomplete="current-password">
+          </div>
+          <button class="btn btn-primary btn-lg" style="width:100%" id="login-btn">Sign In</button>
+          <div id="login-error" class="form-error" style="margin-top:12px;text-align:center"></div>
+        </div>
+
+        <div id="register-form" style="display:none">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input class="form-input" type="text" id="reg-name" placeholder="John Kamau" autocomplete="name">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" type="email" id="reg-email" placeholder="you@example.com" autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Username</label>
+            <input class="form-input" type="text" id="reg-username" placeholder="johndoe" autocomplete="username">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input class="form-input" type="password" id="reg-password" placeholder="Min 8 characters" autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-select" id="reg-role">
+              <option value="farmer">Farmer</option>
+              <option value="buyer">Organization Buyer</option>
+              <option value="auditor">Auditor</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Country</label>
+            <select class="form-select" id="reg-country">
+              <option value="">Select country</option>
+              <option value="Kenya">Kenya</option>
+              <option value="Uganda">Uganda</option>
+              <option value="Tanzania">Tanzania</option>
+              <option value="Rwanda">Rwanda</option>
+              <option value="Ethiopia">Ethiopia</option>
+              <option value="Nigeria">Nigeria</option>
+              <option value="Ghana">Ghana</option>
+              <option value="South Africa">South Africa</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <button class="btn btn-primary btn-lg" style="width:100%" id="register-btn">Create Account</button>
+          <div id="register-error" class="form-error" style="margin-top:12px;text-align:center"></div>
+        </div>
+
+        <div class="auth-footer">
+          <p>Empowering African farmers through carbon credits</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      auth.init();
+
+      if (auth.isAuthenticated()) {
+        const role = auth.getRole();
+        if (role === 'farmer') window.location.href = '/farmer-dashboard.html';
+        else if (role === 'buyer') window.location.href = '/marketplace.html';
+        else window.location.href = '/farmer-dashboard.html';
+        return;
+      }
+
+      const tabs = document.querySelectorAll('.auth-tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('login-form').style.display = tab.dataset.tab === 'login' ? 'block' : 'none';
+          document.getElementById('register-form').style.display = tab.dataset.tab === 'register' ? 'block' : 'none';
+        });
+      });
+
+      document.getElementById('login-btn').addEventListener('click', async () => {
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+        const errorEl = document.getElementById('login-error');
+        if (!username || !password) { errorEl.textContent = 'Please fill in all fields'; return; }
+        errorEl.textContent = '';
+        try {
+          const user = await auth.login(username, password);
+          if (user.role === 'buyer') window.location.href = '/marketplace.html';
+          else window.location.href = '/farmer-dashboard.html';
+        } catch (err) {
+          errorEl.textContent = err.message || 'Login failed';
+        }
+      });
+
+      document.getElementById('register-btn').addEventListener('click', async () => {
+        const data = {
+          full_name: document.getElementById('reg-name').value,
+          email: document.getElementById('reg-email').value,
+          username: document.getElementById('reg-username').value,
+          password: document.getElementById('reg-password').value,
+          role: document.getElementById('reg-role').value,
+          country: document.getElementById('reg-country').value,
+        };
+        const errorEl = document.getElementById('register-error');
+        if (!data.full_name || !data.email || !data.username || !data.password) {
+          errorEl.textContent = 'Please fill in all required fields';
+          return;
+        }
+        if (data.password.length < 8) { errorEl.textContent = 'Password must be at least 8 characters'; return; }
+        errorEl.textContent = '';
+        try {
+          await auth.register(data);
+          errorEl.style.color = '#27ae60';
+          errorEl.textContent = 'Account created! Please sign in.';
+          document.querySelector('[data-tab="login"]').click();
+        } catch (err) {
+          errorEl.textContent = err.message || 'Registration failed';
+        }
+      });
+
+      document.querySelectorAll('.auth-input').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') document.getElementById('login-btn').click();
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Sustainability Advisor — AgriChain Carbon AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/farmer-dashboard.html">
+          <div class="logo-icon">AC</div>
+          <div>
+            <div class="brand-text">AgriChain</div>
+            <div class="brand-sub">Carbon AI Platform</div>
+          </div>
+        </a>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-label">Advisor</div>
+          <a href="/advisor.html" class="nav-item active">
+            <span class="nav-icon">&#9632;</span> AI Advisor
+          </a>
+          <a href="/advisor.html?tab=recommendations" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Recommendations
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Dashboard</div>
+          <a href="/farmer-dashboard.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Farmer Dashboard
+          </a>
+          <a href="/carbon.html" class="nav-item">
+            <span class="nav-icon">&#9632;</span> Carbon Credits
+          </a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-label">Account</div>
+          <a href="#" class="nav-item" id="logout-btn">
+            <span class="nav-icon">&#9632;</span> Sign Out
+          </a>
+        </div>
+      </nav>
+      <div class="sidebar-footer">
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 12px">
+          <div class="user-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--color-primary);color:white;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:14px;">F</div>
+          <div>
+            <div class="user-name" style="font-size:14px;font-weight:600;color:var(--color-text);">Farmer</div>
+            <div class="user-role" style="font-size:12px;color:var(--color-text-muted);">Farmer</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="top-header">
+        <div class="header-left">
+          <button class="mobile-toggle">&#9776;</button>
+          <div class="header-search">
+            <span>&#128269;</span>
+            <input type="text" placeholder="Ask the AI Advisor..." id="advisor-search">
+          </div>
+        </div>
+        <div class="header-right">
+          <select class="form-select" id="language-select" style="width:auto;padding:6px 12px;font-size:13px">
+            <option value="en">English</option>
+            <option value="sw">Kiswahili</option>
+            <option value="fr">Français</option>
+          </select>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <div class="page-header">
+          <h1 class="page-title">AI Sustainability Advisor</h1>
+          <p class="page-subtitle">Intelligent agricultural recommendations for your farm in English, Swahili, or French</p>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-tab="chat">Chat</button>
+          <button class="tab" data-tab="recommendations">Recommendations</button>
+        </div>
+
+        <div id="tab-chat">
+          <div class="card" style="max-width:800px;margin:0 auto">
+            <div id="chat-messages" style="min-height:400px;max-height:500px;overflow-y:auto;margin-bottom:16px;padding:8px">
+              <div class="empty-state" style="padding:40px 16px">
+                <div class="empty-state-icon">&#128172;</div>
+                <div class="empty-state-title">Ask me anything about sustainable farming</div>
+                <p style="color:var(--color-text-muted)">e.g., "How can I improve my soil health?" or "Tips for water conservation"</p>
+              </div>
+            </div>
+            <div style="display:flex;gap:12px">
+              <input class="form-input" id="chat-input" placeholder="Type your question..." style="flex:1">
+              <button class="btn btn-primary" id="chat-send">Send</button>
+            </div>
+            <div style="margin-top:8px;font-size:12px;color:var(--color-text-muted)">
+              Supports: English &middot; Kiswahili &middot; Fran&ccedil;ais
+            </div>
+          </div>
+        </div>
+
+        <div id="tab-recommendations" style="display:none">
+          <div id="recommendations-content">
+            <div class="loading"><div class="spinner"></div></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!auth.requireAuth()) return;
+
+      const tabs = document.querySelectorAll('.tabs .tab');
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          tabs.forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.getElementById('tab-chat').style.display = tab.dataset.tab === 'chat' ? 'block' : 'none';
+          document.getElementById('tab-recommendations').style.display = tab.dataset.tab === 'recommendations' ? 'block' : 'none';
+          if (tab.dataset.tab === 'recommendations') loadRecommendations();
+        });
+      });
+
+      const chatInput = document.getElementById('chat-input');
+      const chatSend = document.getElementById('chat-send');
+      const chatMessages = document.getElementById('chat-messages');
+
+      chatSend.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+
+      async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        const lang = document.getElementById('language-select').value;
+
+        chatMessages.querySelector('.empty-state')?.remove();
+
+        chatMessages.innerHTML += `
+          <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <div style="background:var(--color-primary);color:white;padding:12px 16px;border-radius:16px 16px 4px 16px;max-width:75%;font-size:14px">${escapeHtml(message)}</div>
+          </div>
+        `;
+        chatInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        chatMessages.innerHTML += `
+          <div style="display:flex;margin-bottom:12px" id="typing-indicator">
+            <div style="background:var(--color-surface-alt);padding:12px 16px;border-radius:16px 16px 16px 4px;max-width:75%;font-size:14px">
+              <span class="typing-dots">...</span>
+            </div>
+          </div>
+        `;
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+          const result = await api.post('/advisor/chat', { content: message, language: lang });
+          document.getElementById('typing-indicator')?.remove();
+          chatMessages.innerHTML += `
+            <div style="display:flex;margin-bottom:12px">
+              <div style="background:var(--color-surface-alt);padding:12px 16px;border-radius:16px 16px 16px 4px;max-width:75%;font-size:14px">${escapeHtml(result.content)}</div>
+            </div>
+          `;
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (err) {
+          document.getElementById('typing-indicator')?.remove();
+          chatMessages.innerHTML += `
+            <div class="alert alert-danger" style="margin-bottom:12px">Failed to get response: ${err.message}</div>
+          `;
+        }
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'recommendations') {
+        document.querySelector('[data-tab="recommendations"]').click();
+      }
+    });
+
+    async function loadRecommendations() {
+      const container = document.getElementById('recommendations-content');
+      try {
+        const farms = await api.get('/farms');
+        const farmList = farms.farms || farms || [];
+        if (farmList.length === 0) {
+          container.innerHTML = '<div class="empty-state"><div class="empty-state-title">No Farms Registered</div><p style="color:var(--color-text-muted)">Register a farm to get personalized recommendations.</p></div>';
+          return;
+        }
+        let html = '';
+        for (const farm of farmList) {
+          try {
+            const recs = await api.get(`/advisor/recommendations/${farm.id}`);
+            if (recs && recs.length > 0) {
+              html += `<div class="card" style="margin-bottom:16px">
+                <div class="card-header">
+                  <h3 class="card-title">${farm.name}</h3>
+                  <span class="badge badge-blue">${recs.length} recommendations</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:12px">`;
+              recs.forEach(r => {
+                html += `<div style="padding:12px;background:var(--color-surface-alt);border-radius:var(--radius-sm)">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                    <strong>${r.title}</strong>
+                    <span class="badge ${r.priority === 'high' ? 'badge-red' : r.priority === 'medium' ? 'badge-amber' : 'badge-blue'}">${r.priority}</span>
+                  </div>
+                  <p style="font-size:14px;color:var(--color-text-secondary)">${r.description}</p>
+                  <span style="font-size:12px;color:var(--color-text-muted)">${r.category}</span>
+                </div>`;
+              });
+              html += '</div></div>';
+            }
+          } catch (e) {
+            console.error(`Failed to load recs for ${farm.id}`, e);
+          }
+        }
+        container.innerHTML = html || '<div class="empty-state"><div class="empty-state-title">No Recommendations Yet</div><p style="color:var(--color-text-muted)">Generate a carbon estimate to receive recommendations.</p></div>';
+      } catch (err) {
+        container.innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+      }
+    }
+  </script>
+</body>
+</html>
