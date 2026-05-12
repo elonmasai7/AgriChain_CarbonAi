@@ -14,7 +14,7 @@ from app.api import auth, farms, carbon, satellite, marketplace, advisor, fraud,
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Enterprise climate-finance platform for African farmers to earn blockchain-based carbon credits",
+    description="Enterprise climate-finance platform for farmers worldwide to earn blockchain-based carbon credits",
 )
 
 app.state.limiter = limiter

@@ -4,7 +4,7 @@
 
 ### Overview
 
-The carbon estimation model quantifies CO₂ equivalent sequestration based on farm management practices, environmental factors, and crop characteristics. The methodology follows established carbon accounting principles adapted for smallholder African agriculture.
+The carbon estimation model quantifies CO₂ equivalent sequestration based on farm management practices, environmental factors, and crop characteristics. The methodology follows established carbon accounting principles adapted for smallholder agriculture worldwide.
 
 ### Core Formula
 
@@ -18,10 +18,10 @@ Carbon(tCO₂e) = Base_Rate × Area × Σ(Adjustment_Factors)
 |---|---|---|
 | Coffee (agroforestry) | 4.5 | IPCC 2019 Refinement |
 | Cocoa | 5.0 | Tropical Agriculture Assessment |
-| Maize/Corn | 3.2 | Smallholder Africa Study |
+| Maize/Corn | 3.2 | Smallholder Agriculture Study |
 | Mixed/Diverse | 4.0 | Biodiversity Gradient Analysis |
 | Rice (lowland) | 1.8 | Methane-adjusted |
-| Teff | 2.0 | East Africa Specific |
+| Teff | 2.0 | Regional Specific |
 | Vegetables | 2.8 | Horticulture Average |
 | Default | 2.5 | Conservative Baseline |
 
@@ -178,9 +178,9 @@ Rule-based expert system with knowledge base covering:
 ### Multilingual Support
 
 - **English**: Primary language
-- **Swahili**: East African coverage (40M+ speakers)
-- **French**: West/Central African coverage (120M+ speakers)
+- **Swahili**: Regional coverage (40M+ speakers)
 
+- **French**: Regional coverage (120M+ speakers)
 Translation via curated knowledge base with region-specific advice for each language.
 
 ---

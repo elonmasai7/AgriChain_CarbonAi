@@ -78,19 +78,19 @@ class SustainabilityAdvisor:
 
     def get_climate_adaptation_advice(self, region: str, language: str = "en") -> Dict[str, str]:
         advice = {
-            "east_africa": {
+            "arid": {
                 "en": "Plant drought-resistant crop varieties and implement water harvesting systems.",
                 "sw": "Panda aina za mazao zinazostahimili ukame na kutekeleza mifumo ya kuvuna maji.",
                 "fr": "Plantez des variétés de cultures résistantes à la sécheresse.",
             },
-            "west_africa": {
+            "tropical": {
                 "en": "Use improved drainage systems and plant windbreaks to protect against extreme rainfall.",
                 "sw": "Tumia mifumo bora ya mifereji ya maji na panda ua la upepo.",
                 "fr": "Utilisez des systèmes de drainage améliorés et plantez des brise-vent.",
             },
         }
 
-        region_key = "east_africa"
+        region_key = "arid"
         for key in advice:
             if key.replace("_", " ") in region.lower():
                 region_key = key
@@ -98,7 +98,7 @@ class SustainabilityAdvisor:
 
         return {
             "region": region,
-            "advice": advice.get(region_key, {}).get(language, advice["east_africa"]["en"]),
+            "advice": advice.get(region_key, {}).get(language, advice["arid"]["en"]),
         }
 
 

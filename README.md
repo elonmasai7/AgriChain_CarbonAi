@@ -6,7 +6,7 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1)](https://postgresql.org)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 
-**Enterprise Climate-Finance Platform** — Empowering African farmers to earn blockchain-based carbon credits through sustainable agriculture.
+**Enterprise Climate-Finance Platform** — Empowering farmers worldwide to earn blockchain-based carbon credits through sustainable agriculture.
 
 AgriChain Carbon AI is a production-grade platform that integrates **artificial intelligence**, **satellite intelligence**, **weather analytics**, and **blockchain verification** to estimate carbon sequestration and mint tokenized carbon assets. Organizations can purchase verified carbon credits through a transparent, decentralized marketplace.
 
@@ -14,7 +14,7 @@ AgriChain Carbon AI is a production-grade platform that integrates **artificial 
 
 ## Mission
 
-> *"To democratize carbon credit markets for African smallholder farmers by providing AI-powered verification, blockchain transparency, and a global marketplace — turning sustainable farming into a verifiable financial asset."*
+> *"To democratize carbon credit markets for smallholder farmers worldwide by providing AI-powered verification, blockchain transparency, and a global marketplace — turning sustainable farming into a verifiable financial asset."*
 
 ---
 
@@ -610,4 +610,4 @@ MIT License — See [LICENSE](LICENSE) for details.
 
 Built for the **AgriChain Climate Innovation Hackathon** — a solution designed to be production-ready, investor-presentable, and globally competitive.
 
-*"Turning sustainable agriculture into verifiable financial assets — for African farmers, by African engineers."*
+*"Turning sustainable agriculture into verifiable financial assets — for farmers worldwide, by global engineers."*

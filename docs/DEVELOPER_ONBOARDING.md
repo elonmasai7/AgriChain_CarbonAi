@@ -240,4 +240,4 @@ pip install -r backend/requirements.txt
 
 ---
 
-*"Building the infrastructure for climate finance in Africa."*
+*"Building the infrastructure for climate finance worldwide."*
